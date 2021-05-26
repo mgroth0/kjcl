@@ -1,39 +1,41 @@
 package matt.kjcl
 
 import matt.auto.openInIntelliJ
+import matt.exec.cmd.CommandLineApp
 import matt.kjcl.ModType.ABSTRACT
 import matt.kjcl.ModType.APP
 import matt.kjcl.ModType.APPLIB
 import matt.kjcl.ModType.CLAPP
 import matt.kjcl.ModType.LIB
-import matt.kjlib.commons.ROOT_FOLDER
+import matt.kjlib.commons.USER_DIR
 import matt.kjlib.file.get
 import matt.kjlib.log.err
+import matt.kjlib.recurse.chain
 import matt.kjlib.str.cap
 import matt.kjlib.str.lower
 import matt.klibexport.tfx.isInt
 
 const val JIGSAW = false
 
-val KJ_Fold = ROOT_FOLDER["KJ"]
+val KJ_Fold = USER_DIR.chain { it.parentFile }.first { it.name == "KJ" }
 
-fun main() {
-  println("Hello KJ")
-  val command = readLine()!!
-  val coms = Commands.values().map { it.name }
-  when {
-	command.hasWhiteSpace
-	|| ":" !in command -> err("commands should be separated by \":\"")
+fun main() = CommandLineApp("Hello KJ (KJ_Fold=${KJ_Fold.absolutePath})") {
+  acceptAny { command ->
+	val coms = Commands.values().map { it.name }
+	when {
+	  command.hasWhiteSpace
+	  || ":" !in command -> err("commands should be separated by \":\"")
+	}
+	val argv = command.split(":")
+	val comString = argv[0]
+	when {
+	  comString !in coms -> err("possible commands: $coms")
+	  argv.size != 2     -> err("please specify new module name")
+	}
+	val com = Commands.valueOf(argv[0])
+	com.run(argv[1])
+	println("new module created")
   }
-  val argv = command.split(":")
-  val comString = argv[0]
-  when {
-	comString !in coms -> err("possible commands: $coms")
-	argv.size != 2     -> err("please specify new module name")
-  }
-  val com = Commands.valueOf(argv[0])
-  com.run(argv[1])
-  println("new module created")
 }
 
 val String.hasWhiteSpace
