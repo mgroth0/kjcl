@@ -36,7 +36,7 @@ fun main() = CommandLineApp("Hello KJ (KJ_Fold=${KJ_Fold.absolutePath})") {
 	com.run(argv[1])
 	println("new module created")
   }
-}
+}.start()
 
 val String.hasWhiteSpace
   get() = " " in this || "\n" in this || "\r" in this
@@ -90,16 +90,18 @@ enum class Commands: Command {
 
 	  fold["modtype.txt"].writeText(type.name)
 
+	  val mainKT = kotlin[packpath][nameLast.cap() + "Main.kt"].takeIf { type in listOf(APP, CLAPP) }
+
 	  when (type) {
 		APP      -> {
-		  kotlin[packpath][nameLast.cap() + "Main.kt"].writeText(
+		  mainKT!!.writeText(
 			"""
         package $modname
       """.trimIndent()
 		  )
 		}
 		CLAPP    -> {
-		  kotlin[packpath][nameLast.cap() + "Main.kt"].writeText(
+		  mainKT!!.writeText(
 			"""
         package $modname
       """.trimIndent()
@@ -122,7 +124,7 @@ enum class Commands: Command {
 		ABSTRACT -> {
 		}
 	  }
-	  buildGradleKts.openInIntelliJ()
+	  mainKT?.openInIntelliJ() ?: buildGradleKts.openInIntelliJ()
 	}
   }
 }
