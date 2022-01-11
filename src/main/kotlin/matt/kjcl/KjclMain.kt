@@ -9,10 +9,13 @@ import matt.kjcl.ModType.CLAPP
 import matt.kjcl.ModType.LIB
 import matt.kjlib.commons.USER_DIR
 import matt.kjlib.file.get
+import matt.kjlib.log.NEVER
 import matt.kjlib.log.err
 import matt.kjlib.recurse.chain
 import matt.kjlib.str.cap
+import matt.kjlib.str.hasWhiteSpace
 import matt.kjlib.str.lower
+import matt.klib.Command
 import matt.klibexport.tfx.isInt
 
 const val JIGSAW = false
@@ -23,8 +26,7 @@ fun main() = CommandLineApp("Hello KJ (KJ_Fold=${KJ_Fold.absolutePath})") {
   acceptAny { command ->
 	val coms = Commands.values().map { it.name }
 	when {
-	  command.hasWhiteSpace
-	  || ":" !in command -> err("commands should be separated by \":\"")
+	  command.hasWhiteSpace || ":" !in command -> err("commands should be separated by \":\"")
 	}
 	val argv = command.split(":")
 	val comString = argv[0]
@@ -38,12 +40,6 @@ fun main() = CommandLineApp("Hello KJ (KJ_Fold=${KJ_Fold.absolutePath})") {
   }
 }.start()
 
-val String.hasWhiteSpace
-  get() = " " in this || "\n" in this || "\r" in this
-
-interface Command {
-  fun run(arg: String)
-}
 
 enum class Commands: Command {
   @Suppress("EnumEntryName")
@@ -132,26 +128,19 @@ enum class Commands: Command {
 
 enum class ModType { APP, CLAPP, APPLIB, LIB, ABSTRACT }
 
+@Suppress("KotlinConstantConditions")
 fun gradleTemplate(type: ModType) = when (type) {
-  APP      -> """
-		dependencies {
-			implementation(projects.kj.gui)
-		}
-"""
-  CLAPP    -> """
-		dependencies {
-			implementation(projects.kj.exec)
-		}
-"""
-  APPLIB   -> """
-		dependencies {
-			implementation(projects.kj.kjlib)
-		}
-"""
-  LIB      -> """
-		dependencies {
-			implementation(projects.kj.kjlib)
-		}
-"""
   ABSTRACT -> ""
-}.trimIndent()
+  else     -> """
+		dependencies {
+			implementation(projects.kj.${
+	when (type) {
+	  APP      -> "gui"
+	  CLAPP    -> "exec"
+	  APPLIB   -> "kjlib"
+	  LIB      -> "kjlib"
+	  ABSTRACT -> NEVER
+	}
+  })
+		}""".trimIndent()
+}
