@@ -12,6 +12,8 @@ import matt.kjlib.file.get
 import matt.kjlib.log.NEVER
 import matt.kjlib.log.err
 import matt.kjlib.recurse.chain
+import matt.kjlib.shell.exec
+import matt.kjlib.shell.execReturn
 import matt.kjlib.str.cap
 import matt.kjlib.str.hasWhiteSpace
 import matt.kjlib.str.lower
@@ -46,81 +48,139 @@ enum class Commands: Command {
   newmod {
 
 	override fun run(arg: String) {
-	  val nameLast = arg.substringAfterLast(".")
+	  val subProj = SubProject(arg)
+	  subProj.apply {
 
-	  println("type?" + ModType.values().mapIndexed { index, modType -> "$index=$modType" }.joinToString(","))
-	  val response = readLine()!!.run {
-		when {
-		  !isInt()                                        -> err("must be integer")
-		  toInt() < 0 || toInt() >= ModType.values().size -> err("must use valid index")
+
+		if (fold.exists()) err("$path already exists")
+
+		println("type?" + ModType.values().mapIndexed { index, modType -> "$index=$modType" }.joinToString(","))
+		val response = readLine()!!.run {
+		  when {
+			!isInt()                                        -> err("must be integer")
+			toInt() < 0 || toInt() >= ModType.values().size -> err("must use valid index")
+		  }
+		  toInt()
 		}
-		toInt()
-	  }
 
-	  val type = ModType.values()[response]
-	  val modname = "matt." + arg.lower()
-	  val path = arg.replace(".", "/")
-	  val packpath = modname.replace(".", "/")
-	  val fold = KJ_Fold[path]
-	  val kotlin = fold["src/main/kotlin"]
-	  val java = fold["src/main/java"]
-	  val buildGradleKts = fold["build.gradle.kts"]
+		val type = ModType.values()[response]
 
-	  if (fold.exists()) err("$path already exists")
-
-
-	  if (JIGSAW && type != ABSTRACT) {
-		java.mkdirs()
-		java["module-info.java"].writeText(
-		  """
+		if (JIGSAW && type != ABSTRACT) {
+		  java.mkdirs()
+		  java["module-info.java"].writeText(
+			"""
     module $modname {
     
     }
   """.trimIndent()
+		  )
+		}
+
+		buildGradleKts.parentFile.mkdirs()
+		buildGradleKts.writeText(gradleTemplate(type))
+		if (type != ABSTRACT) kotlin[packpath].mkdirs()
+
+		fold["modtype.txt"].writeText(type.name)
+
+		val mainKT = kotlin[packpath][nameLast.cap() + "Main.kt"].takeIf { type in listOf(APP, CLAPP) }
+
+		when (type) {
+		  APP      -> {
+			mainKT!!.writeText(
+			  """
+        package $modname
+      """.trimIndent()
+			)
+		  }
+		  CLAPP    -> {
+			mainKT!!.writeText(
+			  """
+        package $modname
+      """.trimIndent()
+			)
+		  }
+		  APPLIB   -> {
+			kotlin[packpath]["$nameLast.kt"].writeText(
+			  """
+        package $modname
+      """.trimIndent()
+			)
+		  }
+		  LIB      -> {
+			kotlin[packpath]["$nameLast.kt"].writeText(
+			  """
+        package $modname
+      """.trimIndent()
+			)
+		  }
+		  ABSTRACT -> {
+		  }
+		}
+		mainKT?.openInIntelliJ() ?: buildGradleKts.openInIntelliJ()
+	  }
+	}
+  },
+  tosubmod {
+	override fun run(arg: String) {
+	  if (1 + 1 > 1) {
+		err("need to test this incrementally since it deletes files")
+	  }
+	  val subProj = SubProject(arg)
+	  println(execReturn(wd = subProj.fold, "/opt/homebrew/bin/gh", "repo", "create", "--private", subProj.nameLast))
+	  println(execReturn(wd = subProj.fold, "/usr/bin/git", "init"))
+	  println(execReturn(wd = subProj.fold, "/usr/bin/git", "add", "--all"))
+	  println(execReturn(wd = subProj.fold, "/usr/bin/git", "commit", "-m", "first commit"))
+	  println(execReturn(wd = subProj.fold, "/usr/bin/git", "status"))
+	  println(
+		execReturn(
+		  wd = subProj.fold, "/usr/bin/git", "remote", "add", "origin", "https://github.com/mgroth0/${subProj.nameLast}"
 		)
-	  }
-
-	  buildGradleKts.parentFile.mkdirs()
-	  buildGradleKts.writeText(gradleTemplate(type))
-	  if (type != ABSTRACT) kotlin[packpath].mkdirs()
-
-	  fold["modtype.txt"].writeText(type.name)
-
-	  val mainKT = kotlin[packpath][nameLast.cap() + "Main.kt"].takeIf { type in listOf(APP, CLAPP) }
-
-	  when (type) {
-		APP      -> {
-		  mainKT!!.writeText(
-			"""
-        package $modname
-      """.trimIndent()
-		  )
-		}
-		CLAPP    -> {
-		  mainKT!!.writeText(
-			"""
-        package $modname
-      """.trimIndent()
-		  )
-		}
-		APPLIB   -> {
-		  kotlin[packpath]["$nameLast.kt"].writeText(
-			"""
-        package $modname
-      """.trimIndent()
-		  )
-		}
-		LIB      -> {
-		  kotlin[packpath]["$nameLast.kt"].writeText(
-			"""
-        package $modname
-      """.trimIndent()
-		  )
-		}
-		ABSTRACT -> {
-		}
-	  }
-	  mainKT?.openInIntelliJ() ?: buildGradleKts.openInIntelliJ()
+	  )
+	  println(
+		execReturn(
+		  wd = subProj.fold, "/usr/bin/git", "push", "--set-upstream","origin","master"
+		)
+	  )
+	  println(
+		execReturn(
+		  wd = subProj.fold, "/usr/bin/git", "open"
+		)
+	  )
+	  println(
+		execReturn(
+		  wd = KJ_Fold.parentFile, "rm", "-rf", subProj.fold.absolutePath
+		)
+	  )
+	  println(
+		execReturn(
+		  wd = KJ_Fold.parentFile, "/usr/bin/git", "add", "--all"
+		)
+	  )
+	  println(
+		execReturn(
+		  wd = KJ_Fold.parentFile, "/usr/bin/git", "commit", "-m", "remove ${subProj.nameLast} which is to become submodule"
+		)
+	  )
+	  println(
+		execReturn(
+		  wd = KJ_Fold.parentFile, "/usr/bin/git", "submodule", "add", "https://github.com/mgroth0/${subProj.nameLast}","KJ/${subProj.nameLast}"
+		)
+	  )
+	  println(
+		execReturn(
+		  wd = KJ_Fold.parentFile, "/usr/bin/git", "add", "--all"
+		)
+	  )
+	  println(
+		execReturn(
+		  wd = KJ_Fold.parentFile, "/usr/bin/git", "commit", "-m", "add ${subProj.nameLast} submodule"
+		)
+	  )
+	  println(
+		execReturn(
+		  wd = KJ_Fold.parentFile, "/usr/bin/git", "push"
+		)
+	  )
 	}
   }
 }
@@ -143,4 +203,16 @@ fun gradleTemplate(type: ModType) = when (type) {
 	}
   })
 		}""".trimIndent()
+}
+
+
+class SubProject(arg: String) {
+  val nameLast = arg.substringAfterLast(".")
+  val modname = "matt." + arg.lower()
+  val path = arg.replace(".", "/")
+  val packpath = modname.replace(".", "/")
+  val fold = KJ_Fold[path]
+  val kotlin = fold["src/main/kotlin"]
+  val java = fold["src/main/java"]
+  val buildGradleKts = fold["build.gradle.kts"]
 }
