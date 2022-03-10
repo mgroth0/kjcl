@@ -122,63 +122,63 @@ enum class Commands: Command {
   },
   tosubmod {
 	override fun run(arg: String) {
-	  if (1 + 1 > 1) {
-		err("need to test this incrementally since it deletes files")
-	  }
 	  val subProj = SubProject(arg)
-	  println(execReturn(wd = subProj.fold, "/opt/homebrew/bin/gh", "repo", "create", "--private", subProj.nameLast))
-	  println(execReturn(wd = subProj.fold, "/usr/bin/git", "init"))
-	  println(execReturn(wd = subProj.fold, "/usr/bin/git", "add", "--all"))
-	  println(execReturn(wd = subProj.fold, "/usr/bin/git", "commit", "-m", "first commit"))
-	  println(execReturn(wd = subProj.fold, "/usr/bin/git", "status"))
+
+	  /*dont worry if repo already exists. it wont create another. safe to run over again.*/
+	  println(execReturn(wd = subProj.fold, "/bin/zsh", "-c",listOf("/opt/homebrew/bin/gh", "repo", "create", "--private", subProj.nameLast).joinToString(separator = " "),verbose=true))
+
+ 	  println(execReturn(wd = subProj.fold, "/usr/bin/git", "init",verbose=true))
+	  println(execReturn(wd = subProj.fold, "/usr/bin/git", "add", "--all",verbose=true))
+	  println(execReturn(wd = subProj.fold, "/usr/bin/git", "commit", "-m", "first commit",verbose=true))
+	  println(execReturn(wd = subProj.fold, "/usr/bin/git", "status",verbose=true))
 	  println(
 		execReturn(
-		  wd = subProj.fold, "/usr/bin/git", "remote", "add", "origin", "https://github.com/mgroth0/${subProj.nameLast}"
+		  wd = subProj.fold, "/usr/bin/git", "remote", "add", "origin", "https://github.com/mgroth0/${subProj.nameLast}",verbose=true
 		)
 	  )
 	  println(
 		execReturn(
-		  wd = subProj.fold, "/usr/bin/git", "push", "--set-upstream","origin","master"
+		  wd = subProj.fold, "/usr/bin/git", "push", "--set-upstream","origin","master",verbose=true
 		)
 	  )
 	  println(
 		execReturn(
-		  wd = subProj.fold, "/usr/bin/git", "open"
+		  wd = subProj.fold, "/usr/bin/git", "open",verbose=true
 		)
 	  )
 	  println(
 		execReturn(
-		  wd = KJ_Fold.parentFile, "rm", "-rf", subProj.fold.absolutePath
+		  wd = KJ_Fold.parentFile, "rm", "-rf", subProj.fold.absolutePath,verbose=true
 		)
 	  )
 	  println(
 		execReturn(
-		  wd = KJ_Fold.parentFile, "/usr/bin/git", "add", "--all"
+		  wd = KJ_Fold.parentFile, "/usr/bin/git", "add", "--all",verbose=true
 		)
 	  )
 	  println(
 		execReturn(
-		  wd = KJ_Fold.parentFile, "/usr/bin/git", "commit", "-m", "remove ${subProj.nameLast} which is to become submodule"
+		  wd = KJ_Fold.parentFile, "/usr/bin/git", "commit", "-m", "remove ${subProj.nameLast} which is to become submodule",verbose=true
 		)
 	  )
 	  println(
 		execReturn(
-		  wd = KJ_Fold.parentFile, "/usr/bin/git", "submodule", "add", "https://github.com/mgroth0/${subProj.nameLast}","KJ/${subProj.nameLast}"
+		  wd = KJ_Fold.parentFile, "/usr/bin/git", "submodule", "add", "https://github.com/mgroth0/${subProj.nameLast}","KJ/${subProj.nameLast}",verbose=true
 		)
 	  )
 	  println(
 		execReturn(
-		  wd = KJ_Fold.parentFile, "/usr/bin/git", "add", "--all"
+		  wd = KJ_Fold.parentFile, "/usr/bin/git", "add", "--all",verbose=true
 		)
 	  )
 	  println(
 		execReturn(
-		  wd = KJ_Fold.parentFile, "/usr/bin/git", "commit", "-m", "add ${subProj.nameLast} submodule"
+		  wd = KJ_Fold.parentFile, "/usr/bin/git", "commit", "-m", "add ${subProj.nameLast} submodule",verbose=true
 		)
 	  )
 	  println(
 		execReturn(
-		  wd = KJ_Fold.parentFile, "/usr/bin/git", "push"
+		  wd = KJ_Fold.parentFile, "/usr/bin/git", "push",verbose=true
 		)
 	  )
 	}
