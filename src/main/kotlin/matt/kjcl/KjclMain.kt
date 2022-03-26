@@ -25,7 +25,7 @@ const val JIGSAW = false
 
 val KJ_Fold = USER_DIR.chain { it.parentFile }.first { it.name == "KJ" }
 
-fun main() = CommandLineApp("Hello KJ (KJ_Fold=${KJ_Fold.absolutePath})") {
+fun main() = CommandLineApp(mainPrompt = "Hello KJ (KJ_Fold=${KJ_Fold.absolutePath})\n") {
     acceptAny { command ->
         val coms = Commands.values().map { it.name }
         when {
