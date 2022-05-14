@@ -12,7 +12,6 @@ import matt.kjlib.file.get
 import matt.kjlib.log.NEVER
 import matt.kjlib.log.err
 import matt.kjlib.recurse.chain
-import matt.kjlib.shell.exec
 import matt.kjlib.shell.execReturn
 import matt.kjlib.str.cap
 import matt.kjlib.str.hasWhiteSpace
@@ -226,7 +225,18 @@ enum class Commands: Command {
   },
   addsubmod {
 	override fun run(arg: String) {
-	  val todo = "git submodule add https://github.com/mgroth0/hotkey kj/hotkey"
+	  val subProj = SubProject(arg)
+	  execReturn(
+		wd = KJ_Fold.parentFile,
+
+		"/usr/bin/git",
+		"submodule",
+		"add",
+		"https://github.com/mgroth0/${subProj.path}",
+		"kj/${subProj.path}",
+
+		verbose = true
+	  )
 	}
   }
 }
