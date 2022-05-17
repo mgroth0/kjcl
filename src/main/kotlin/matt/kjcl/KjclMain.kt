@@ -1,5 +1,6 @@
 package matt.kjcl
 
+import matt.auto.desktop
 import matt.auto.openInIntelliJ
 import matt.exec.cmd.CommandLineApp
 import matt.kjcl.ModType.ABSTRACT
@@ -17,8 +18,15 @@ import matt.kjlib.str.cap
 import matt.kjlib.str.hasWhiteSpace
 import matt.kjlib.str.lower
 import matt.klib.Command
+import matt.klib.CommandWithExitStatus
+import matt.klib.ExitStatus
+import matt.klib.ExitStatus.CONTINUE
+import matt.klib.ExitStatus.EXIT
+import matt.klib.log.warn
 import matt.klibexport.tfx.isInt
 import matt.reflect.ismac
+import java.net.URI
+import kotlin.system.exitProcess
 
 const val JIGSAW = false
 
@@ -37,19 +45,28 @@ fun main() = CommandLineApp(mainPrompt = "Hello KJ (KJ_Fold=${KJ_Fold.absolutePa
 	  argv.size != 2     -> err("please specify new module name")
 	}
 	val com = Commands.valueOf(argv[0])
-	com.run(argv[1])
-	println(
+	val exitStatus = com.run(argv[1])
+	warn(
 	  "new module created (TODO: PLEASE MAKE IT SO KJCL WONT CRASH IF I PRESS ENTER WHILE PREVIOUS COMMAND IS RUNNING)"
 	)
+	when (exitStatus) {
+	  CONTINUE -> {
+		/*do nothing*/
+	  }
+	  EXIT     -> {
+		println("exiting")
+		exitProcess(0)
+	  }
+	}
   }
 }.start()
 
 
-enum class Commands: Command {
+enum class Commands: CommandWithExitStatus {
   @Suppress("EnumEntryName")
   newmod {
 
-	override fun run(arg: String) {
+	override fun run(arg: String): ExitStatus {
 	  val subProj = SubProject(arg)
 	  subProj.apply {
 
@@ -122,10 +139,11 @@ enum class Commands: Command {
 		  mainKT?.openInIntelliJ() ?: buildGradleKts.openInIntelliJ()
 		}
 	  }
+	  return CONTINUE
 	}
   },
   tosubmod {
-	override fun run(arg: String) {
+	override fun run(arg: String): ExitStatus {
 	  val subProj = SubProject(arg)
 
 	  /*dont worry if repo already exists. it wont create another. safe to run over again.*/
@@ -149,6 +167,9 @@ enum class Commands: Command {
 	  println(execReturn(wd = subProj.fold, "/usr/bin/git", "add", "--all", verbose = true))
 	  println(execReturn(wd = subProj.fold, "/usr/bin/git", "commit", "-m", "first commit", verbose = true))
 	  println(execReturn(wd = subProj.fold, "/usr/bin/git", "status", verbose = true))
+
+	  val repoURL = "https://github.com/mgroth0/${subProj.nameLast}"
+
 	  println(
 		execReturn(
 		  wd = subProj.fold,
@@ -156,7 +177,7 @@ enum class Commands: Command {
 		  "remote",
 		  "add",
 		  "origin",
-		  "https://github.com/mgroth0/${subProj.nameLast}",
+		  repoURL,
 		  verbose = true
 		)
 	  )
@@ -165,11 +186,7 @@ enum class Commands: Command {
 		  wd = subProj.fold, "/usr/bin/git", "push", "--set-upstream", "origin", "master", verbose = true
 		)
 	  )
-	  println(
-		execReturn(
-		  wd = subProj.fold, "/usr/bin/git", "open", verbose = true
-		)
-	  )
+	  desktop.browse(URI(repoURL))
 	  println(
 		execReturn(
 		  wd = KJ_Fold.parentFile, "rm", "-rf", subProj.fold.absolutePath, verbose = true
@@ -196,7 +213,7 @@ enum class Commands: Command {
 		  "/usr/bin/git",
 		  "submodule",
 		  "add",
-		  "https://github.com/mgroth0/${subProj.nameLast}",
+		  repoURL,
 		  "KJ/${subProj.nameLast}",
 		  verbose = true
 		)
@@ -221,10 +238,11 @@ enum class Commands: Command {
 		  wd = KJ_Fold.parentFile, "/usr/bin/git", "push", verbose = true
 		)
 	  )
+	  return CONTINUE
 	}
   },
   addsubmod {
-	override fun run(arg: String) {
+	override fun run(arg: String): ExitStatus {
 	  val subProj = SubProject(arg)
 	  execReturn(
 		wd = KJ_Fold.parentFile,
@@ -237,6 +255,12 @@ enum class Commands: Command {
 
 		verbose = true
 	  )
+	  return CONTINUE
+	}
+  },
+  exit {
+	override fun run(arg: String): ExitStatus {
+	  return EXIT
 	}
   }
 }
