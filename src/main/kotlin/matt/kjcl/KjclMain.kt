@@ -3,6 +3,7 @@ package matt.kjcl
 import matt.auto.desktop
 import matt.auto.openInIntelliJ
 import matt.exec.cmd.CommandLineApp
+import matt.kbuild.ismac
 import matt.kjcl.ModType.ABSTRACT
 import matt.kjcl.ModType.APP
 import matt.kjcl.ModType.APPLIB
@@ -24,7 +25,6 @@ import matt.klib.ExitStatus.CONTINUE
 import matt.klib.ExitStatus.EXIT
 import matt.klib.log.warn
 import matt.klibexport.tfx.isInt
-import matt.reflect.ismac
 import java.net.URI
 import kotlin.system.exitProcess
 
