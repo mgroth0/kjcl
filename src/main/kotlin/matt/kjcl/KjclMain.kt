@@ -3,6 +3,7 @@ package matt.kjcl
 import matt.auto.desktop
 import matt.auto.openInIntelliJ
 import matt.exec.cmd.CommandLineApp
+import matt.kbuild.cap
 import matt.kbuild.ismac
 import matt.kjcl.ModType.ABSTRACT
 import matt.kjcl.ModType.APP
@@ -15,7 +16,6 @@ import matt.kjlib.log.NEVER
 import matt.kjlib.log.err
 import matt.kjlib.recurse.chain
 import matt.kjlib.shell.execReturn
-import matt.kjlib.str.cap
 import matt.kjlib.str.hasWhiteSpace
 import matt.kjlib.str.lower
 import matt.klib.Command
