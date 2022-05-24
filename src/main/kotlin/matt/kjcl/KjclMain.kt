@@ -25,6 +25,7 @@ import matt.klib.ExitStatus.CONTINUE
 import matt.klib.ExitStatus.EXIT
 import matt.klib.log.warn
 import matt.klibexport.tfx.isInt
+import java.io.File
 import java.net.URI
 import kotlin.system.exitProcess
 
@@ -190,6 +191,29 @@ enum class Commands: CommandWithExitStatus {
 	  val subProj = SubProject(arg)
 	  val rootGit = SimpleGit(projectDir = KJ_Fold.parentFile, debug = true)
 	  rootGit.submoduleAdd(url = subProj.url, path = subProj.pathRelativeToRoot)
+	  return CONTINUE
+	}
+  },
+  removesubmod {
+	override fun run(arg: String): ExitStatus {
+	  val subProj = SubProject(arg)
+	  val rootGit = SimpleGit(projectDir = KJ_Fold.parentFile, debug = true)
+
+	  /*https://stackoverflow.com/questions/1260748/how-do-i-remove-a-submodule*/
+	  rootGit.gitRm(subProj.pathRelativeToRoot)
+	  execReturn(
+		wd = KJ_Fold.parentFile,
+		"rm",
+		"-rf",
+		KJ_Fold.parentFile[".git"]["modules"][subProj.pathRelativeToRoot].absolutePath,
+		verbose = true,
+		printResult = true
+	  )
+
+	  /*this part results in fatal error, so I made on comment in stackoverflow...*/
+	  rootGit.gitConfigRemoveSection("submodule.${subProj.pathRelativeToRoot.replace(File.separatorChar, '.')}")
+
+
 	  return CONTINUE
 	}
   },
