@@ -18,7 +18,6 @@ import matt.kjlib.recurse.chain
 import matt.kjlib.shell.execReturn
 import matt.kjlib.str.hasWhiteSpace
 import matt.kjlib.str.lower
-import matt.klib.Command
 import matt.klib.CommandWithExitStatus
 import matt.klib.ExitStatus
 import matt.klib.ExitStatus.CONTINUE
