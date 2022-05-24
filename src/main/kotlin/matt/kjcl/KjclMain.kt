@@ -13,8 +13,8 @@ import matt.kjcl.ModType.CLAPP
 import matt.kjcl.ModType.LIB
 import matt.kjlib.commons.USER_DIR
 import matt.kjlib.file.get
-import matt.kjlib.log.NEVER
-import matt.kjlib.log.err
+import matt.kjlib.lang.NEVER
+import matt.kjlib.lang.err
 import matt.kjlib.recurse.chain
 import matt.kjlib.shell.execReturn
 import matt.kjlib.str.hasWhiteSpace
@@ -102,42 +102,17 @@ enum class Commands: CommandWithExitStatus {
 
 		fold["modtype.txt"].writeText(type.name)
 
-		val mainKT = kotlin[packpath][nameLast.cap() + "Main.kt"].takeIf { type in listOf(APP, CLAPP) }
-
-		when (type) {
-		  APP      -> {
-			mainKT!!.writeText(
-			  """
-        package $modname
-      """.trimIndent()
-			)
+		val fileToOpen = when (type) {
+		  APP, CLAPP  -> kotlin[packpath][nameLast.cap() + "Main.kt"].takeIf { type in listOf(APP, CLAPP) }!!.apply {
+			writeText("""package $modname""".trimIndent())
 		  }
-		  CLAPP    -> {
-			mainKT!!.writeText(
-			  """
-        package $modname
-      """.trimIndent()
-			)
+		  APPLIB, LIB -> kotlin[packpath]["$nameLast.kt"].apply {
+			writeText("""package $modname""".trimIndent())
 		  }
-		  APPLIB   -> {
-			kotlin[packpath]["$nameLast.kt"].writeText(
-			  """
-        package $modname
-      """.trimIndent()
-			)
-		  }
-		  LIB      -> {
-			kotlin[packpath]["$nameLast.kt"].writeText(
-			  """
-        package $modname
-      """.trimIndent()
-			)
-		  }
-		  ABSTRACT -> {
-		  }
+		  ABSTRACT    -> null
 		}
 		if (ismac) {
-		  mainKT?.openInIntelliJ() ?: buildGradleKts.openInIntelliJ()
+		  fileToOpen?.openInIntelliJ() ?: buildGradleKts.openInIntelliJ()
 		}
 	  }
 	  return CONTINUE
@@ -237,7 +212,7 @@ fun gradleTemplate(type: ModType) = when (type) {
 	  APP      -> "gui"
 	  CLAPP    -> "exec"
 	  APPLIB   -> "kjlib"
-	  LIB      -> "kjlib"
+	  LIB      -> "kjlib.lang"
 	  ABSTRACT -> NEVER
 	}
   })
