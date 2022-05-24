@@ -4,6 +4,7 @@ import matt.auto.desktop
 import matt.auto.openInIntelliJ
 import matt.exec.cmd.CommandLineApp
 import matt.kbuild.cap
+import matt.kbuild.git.SimpleGit
 import matt.kbuild.ismac
 import matt.kjcl.ModType.ABSTRACT
 import matt.kjcl.ModType.APP
@@ -162,98 +163,33 @@ enum class Commands: CommandWithExitStatus {
 		)
 	  )
 
-	  println(execReturn(wd = subProj.fold, "/usr/bin/git", "init", verbose = true))
-	  println(execReturn(wd = subProj.fold, "/usr/bin/git", "add", "--all", verbose = true))
-	  println(execReturn(wd = subProj.fold, "/usr/bin/git", "commit", "-m", "first commit", verbose = true))
-	  println(execReturn(wd = subProj.fold, "/usr/bin/git", "status", verbose = true))
-
-	  val repoURL = "https://github.com/mgroth0/${subProj.nameLast}"
-
-	  println(
-		execReturn(
-		  wd = subProj.fold,
-		  "/usr/bin/git",
-		  "remote",
-		  "add",
-		  "origin",
-		  repoURL,
-		  verbose = true
-		)
-	  )
-	  println(
-		execReturn(
-		  wd = subProj.fold, "/usr/bin/git", "push", "--set-upstream", "origin", "master", verbose = true
-		)
-	  )
-	  desktop.browse(URI(repoURL))
-	  println(
-		execReturn(
-		  wd = KJ_Fold.parentFile, "rm", "-rf", subProj.fold.absolutePath, verbose = true
-		)
-	  )
-	  println(
-		execReturn(
-		  wd = KJ_Fold.parentFile, "/usr/bin/git", "add", "--all", verbose = true
-		)
-	  )
-	  println(
-		execReturn(
-		  wd = KJ_Fold.parentFile,
-		  "/usr/bin/git",
-		  "commit",
-		  "-m",
-		  "remove ${subProj.nameLast} which is to become submodule",
-		  verbose = true
-		)
-	  )
-	  println(
-		execReturn(
-		  wd = KJ_Fold.parentFile,
-		  "/usr/bin/git",
-		  "submodule",
-		  "add",
-		  repoURL,
-		  "KJ/${subProj.nameLast}",
-		  verbose = true
-		)
-	  )
-	  println(
-		execReturn(
-		  wd = KJ_Fold.parentFile, "/usr/bin/git", "add", "--all", verbose = true
-		)
-	  )
-	  println(
-		execReturn(
-		  wd = KJ_Fold.parentFile,
-		  "/usr/bin/git",
-		  "commit",
-		  "-m",
-		  "add ${subProj.nameLast} submodule",
-		  verbose = true
-		)
-	  )
-	  println(
-		execReturn(
-		  wd = KJ_Fold.parentFile, "/usr/bin/git", "push", verbose = true
-		)
-	  )
+	  subProj.git.apply {
+		init()
+		addAll()
+		commit("first commit")
+		status()
+		remoteAddOrigin(subProj.url)
+		push(setUpstream = true)
+		desktop.browse(URI(subProj.url))
+		execReturn(wd = KJ_Fold.parentFile, "rm", "-rf", subProj.fold.absolutePath, verbose = true, printResult = true)
+	  }
+	  val rootGit = SimpleGit(projectDir = KJ_Fold.parentFile, debug = true)
+	  rootGit.apply {
+		addAll()
+		commit("remove ${subProj.path} which is to become submodule")
+		submoduleAdd(url = subProj.url, path = subProj.pathRelativeToRoot)
+		addAll()
+		commit("add ${subProj.path} submodule")
+		push()
+	  }
 	  return CONTINUE
 	}
   },
   addsubmod {
 	override fun run(arg: String): ExitStatus {
 	  val subProj = SubProject(arg)
-	  execReturn(
-		wd = KJ_Fold.parentFile,
-
-		"/usr/bin/git",
-		"submodule",
-		"add",
-		"https://github.com/mgroth0/${subProj.path}",
-		"kj/${subProj.path}",
-
-		verbose = true
-	  )
+	  val rootGit = SimpleGit(projectDir = KJ_Fold.parentFile, debug = true)
+	  rootGit.submoduleAdd(url = subProj.url, path = subProj.pathRelativeToRoot)
 	  return CONTINUE
 	}
   },
@@ -289,9 +225,16 @@ class SubProject(arg: String) {
   val nameLast = arg.substringAfterLast(".")
   val modname = "matt." + arg.lower()
   val path = arg.replace(".", "/")
+  val pathRelativeToRoot = "KJ/${path}"
+  val url = "https://github.com/mgroth0/${path}"
   val packpath = modname.replace(".", "/")
   val fold = KJ_Fold[path]
   val kotlin = fold["src/main/kotlin"]
   val java = fold["src/main/java"]
   val buildGradleKts = fold["build.gradle.kts"]
+  val git by lazy {
+	SimpleGit(projectDir = fold, debug = true)
+  }
 }
+
+
