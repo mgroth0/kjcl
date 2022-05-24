@@ -15,7 +15,7 @@ import matt.kjlib.commons.USER_DIR
 import matt.kjlib.file.get
 import matt.kjlib.lang.NEVER
 import matt.kjlib.lang.err
-import matt.kjlib.recurse.chain
+import matt.kjlib.stream.recurse.chain
 import matt.kjlib.shell.execReturn
 import matt.kjlib.str.hasWhiteSpace
 import matt.kjlib.str.lower
