@@ -5,7 +5,6 @@ import matt.auto.openInIntelliJ
 import matt.exec.cmd.CommandLineApp
 import matt.kbuild.cap
 import matt.kbuild.git.SimpleGit
-import matt.kbuild.ismac
 import matt.kjcl.ModType.ABSTRACT
 import matt.kjcl.ModType.APP
 import matt.kjcl.ModType.APPLIB
@@ -15,6 +14,7 @@ import matt.kjlib.commons.USER_DIR
 import matt.kjlib.file.get
 import matt.kjlib.lang.NEVER
 import matt.kjlib.lang.err
+import matt.kjlib.lang.jlang.ismac
 import matt.kjlib.stream.recurse.chain
 import matt.kjlib.shell.execReturn
 import matt.kjlib.str.hasWhiteSpace
