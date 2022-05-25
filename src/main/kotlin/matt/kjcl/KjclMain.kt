@@ -3,7 +3,7 @@ package matt.kjcl
 import matt.auto.desktop
 import matt.auto.openInIntelliJ
 import matt.exec.cmd.CommandLineApp
-import matt.kbuild.cap
+import matt.klib.lang.cap
 import matt.kbuild.git.SimpleGit
 import matt.kjcl.ModType.ABSTRACT
 import matt.kjcl.ModType.APP
