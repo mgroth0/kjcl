@@ -10,11 +10,9 @@ import matt.kjcl.ModType.APP
 import matt.kjcl.ModType.APPLIB
 import matt.kjcl.ModType.CLAPP
 import matt.kjcl.ModType.LIB
-import matt.kjlib.commons.USER_DIR
-import matt.kjlib.file.get
+import matt.klib.commons.USER_DIR
 import matt.kjlib.lang.NEVER
 import matt.kjlib.lang.err
-import matt.kjlib.lang.jlang.ismac
 import matt.kjlib.stream.recurse.chain
 import matt.kjlib.shell.execReturn
 import matt.kjlib.str.hasWhiteSpace
@@ -23,6 +21,8 @@ import matt.klib.CommandWithExitStatus
 import matt.klib.ExitStatus
 import matt.klib.ExitStatus.CONTINUE
 import matt.klib.ExitStatus.EXIT
+import matt.klib.commons.get
+import matt.klib.commons.ismac
 import matt.klib.log.warn
 import matt.klibexport.tfx.isInt
 import java.io.File
@@ -104,6 +104,7 @@ enum class Commands: CommandWithExitStatus {
 
 		val fileToOpen = when (type) {
 		  APP, CLAPP  -> kotlin[packpath][nameLast.cap() + "Main.kt"].takeIf { type in listOf(APP, CLAPP) }!!.apply {
+
 			writeText("""package $modname""".trimIndent())
 		  }
 		  APPLIB, LIB -> kotlin[packpath]["$nameLast.kt"].apply {
