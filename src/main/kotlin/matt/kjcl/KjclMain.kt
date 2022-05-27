@@ -3,27 +3,27 @@ package matt.kjcl
 import matt.auto.desktop
 import matt.auto.openInIntelliJ
 import matt.exec.cmd.CommandLineApp
-import matt.klib.lang.cap
-import matt.kbuild.git.SimpleGit
 import matt.kjcl.ModType.ABSTRACT
 import matt.kjcl.ModType.APP
 import matt.kjcl.ModType.APPLIB
 import matt.kjcl.ModType.CLAPP
 import matt.kjcl.ModType.LIB
-import matt.klib.commons.USER_DIR
+import matt.kjlib.git.SimpleGit
 import matt.kjlib.lang.NEVER
 import matt.kjlib.lang.err
-import matt.kjlib.stream.recurse.chain
 import matt.kjlib.shell.execReturn
 import matt.kjlib.str.hasWhiteSpace
 import matt.kjlib.str.lower
-import matt.klib.CommandWithExitStatus
+import matt.kjlib.str.taball
+import matt.kjlib.stream.recurse.chain
+import matt.klib.SingleArgCommandWithExitStatus
 import matt.klib.ExitStatus
 import matt.klib.ExitStatus.CONTINUE
 import matt.klib.ExitStatus.EXIT
+import matt.klib.commons.USER_DIR
 import matt.klib.commons.get
 import matt.klib.commons.ismac
-import matt.klib.log.warn
+import matt.klib.lang.cap
 import matt.klibexport.tfx.isInt
 import java.io.File
 import java.net.URI
@@ -34,36 +34,37 @@ const val JIGSAW = false
 val KJ_Fold = USER_DIR.chain { it.parentFile }.first { it.name == "KJ" }
 
 fun main() = CommandLineApp(mainPrompt = "Hello KJ (KJ_Fold=${KJ_Fold.absolutePath})\n") {
+
+  val coms = Commands.values().map { it.name }
+
   acceptAny { command ->
-	val coms = Commands.values().map { it.name }
 	when {
-	  command.hasWhiteSpace || ":" !in command -> err("commands should be separated by \":\"")
-	}
-	val argv = command.split(":")
-	val comString = argv[0]
-	when {
-	  comString !in coms -> err("possible commands: $coms")
-	  argv.size != 2     -> err("please specify new module name")
-	}
-	val com = Commands.valueOf(argv[0])
-	val exitStatus = com.run(argv[1])
-	warn(
-	  "new module created (TODO: PLEASE MAKE IT SO KJCL WONT CRASH IF I PRESS ENTER WHILE PREVIOUS COMMAND IS RUNNING)"
-	)
-	when (exitStatus) {
-	  CONTINUE -> {
-		/*do nothing*/
-	  }
-	  EXIT     -> {
-		println("exiting")
-		exitProcess(0)
+	  command.hasWhiteSpace -> println("command should not have when space")
+	  ":" !in command       -> println("commands should be separated by \":\"")
+	  else                  -> {
+		val argv = command.split(":")
+		val comString = argv[0]
+		val com = Commands.valueOf(argv[0])
+		when {
+		  comString !in coms -> taball("possible commands", coms + CommandLineApp.exitCommands)
+		  argv.size != 2     -> println("$com should have one arg")
+		  else               -> {
+			when (com.run(argv[1])) {
+			  CONTINUE -> Unit
+			  EXIT     -> exitProcess(0)
+			}
+		  }
+		}
 	  }
 	}
   }
 }.start()
 
 
-enum class Commands: CommandWithExitStatus {
+@Suppress("EnumEntryName")
+enum class Commands: SingleArgCommandWithExitStatus {
+
+
   @Suppress("EnumEntryName")
   newmod {
 
@@ -192,12 +193,9 @@ enum class Commands: CommandWithExitStatus {
 
 	  return CONTINUE
 	}
-  },
-  exit {
-	override fun run(arg: String): ExitStatus {
-	  return EXIT
-	}
-  }
+  };
+
+  override fun toString() = name
 }
 
 
