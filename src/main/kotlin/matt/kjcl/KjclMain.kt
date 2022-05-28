@@ -9,8 +9,6 @@ import matt.kjcl.ModType.APPLIB
 import matt.kjcl.ModType.CLAPP
 import matt.kjcl.ModType.LIB
 import matt.kjlib.git.SimpleGit
-import matt.kjlib.lang.NEVER
-import matt.kjlib.lang.err
 import matt.kjlib.shell.execReturn
 import matt.kjlib.str.hasWhiteSpace
 import matt.kjlib.str.lower
@@ -23,7 +21,9 @@ import matt.klib.ExitStatus.EXIT
 import matt.klib.commons.USER_DIR
 import matt.klib.commons.get
 import matt.klib.commons.ismac
+import matt.klib.lang.NEVER
 import matt.klib.lang.cap
+import matt.klib.lang.err
 import matt.klib.tfx.isInt
 import java.io.File
 import java.net.URI
