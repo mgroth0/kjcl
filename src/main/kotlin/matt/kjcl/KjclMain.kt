@@ -13,7 +13,7 @@ import matt.kjlib.shell.execReturn
 import matt.klib.str.hasWhiteSpace
 import matt.klib.str.lower
 import matt.klib.str.taball
-import matt.kjlib.stream.recurse.chain
+import matt.stream.recurse.chain
 import matt.klib.SingleArgCommandWithExitStatus
 import matt.klib.ExitStatus
 import matt.klib.ExitStatus.CONTINUE
