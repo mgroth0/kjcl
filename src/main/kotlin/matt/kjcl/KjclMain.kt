@@ -10,9 +10,9 @@ import matt.kjcl.ModType.CLAPP
 import matt.kjcl.ModType.LIB
 import matt.kjlib.git.SimpleGit
 import matt.kjlib.shell.execReturn
-import matt.kjlib.str.hasWhiteSpace
-import matt.kjlib.str.lower
-import matt.kjlib.str.taball
+import matt.klib.str.hasWhiteSpace
+import matt.klib.str.lower
+import matt.klib.str.taball
 import matt.kjlib.stream.recurse.chain
 import matt.klib.SingleArgCommandWithExitStatus
 import matt.klib.ExitStatus
