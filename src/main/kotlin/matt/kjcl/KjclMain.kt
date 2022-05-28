@@ -24,7 +24,7 @@ import matt.klib.commons.USER_DIR
 import matt.klib.commons.get
 import matt.klib.commons.ismac
 import matt.klib.lang.cap
-import matt.klibexport.tfx.isInt
+import matt.klib.tfx.isInt
 import java.io.File
 import java.net.URI
 import kotlin.system.exitProcess
